@@ -8,7 +8,6 @@ export default function () {
     const debugSource = config.debug.enabled ? '_debug' : ''
     const source = `https://www.google-analytics.com/analytics${debugSource}.js`
     const prior = document.getElementsByTagName('script')[0]
-
     script.async = 1
     prior.parentNode.insertBefore(script, prior)
 
@@ -30,18 +29,33 @@ export default function () {
           }
         }
 
-        window.ga('create', config.id, 'auto', options)
+        if (config.ids) {
+          config.ids.forEach(({id, name}, index) => {
+            window.ga('create', id, 'auto', name)
+          })
+        } else {
+          window.ga('create', config.id, 'auto', options)
+        }
 
         if (!config.debug.sendHitTask) {
           set('sendHitTask', null)
         }
 
-        window.ga('send', 'pageview')
-
-        resolve({
-          success: true,
-          id: config.id
+        window.ga.getAll().forEach(tracker => {
+          tracker.send('pageview')
         })
+
+        if (config.ids) {
+          resolve({
+            success: true,
+            ids: config.ids
+          })
+        } else {
+          resolve({
+            success: true,
+            id: config.id
+          })
+        }
       }
     }
 

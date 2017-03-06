@@ -7,8 +7,7 @@ export default function (router, callback) {
   if (config.manual) {
     return
   }
-
-  if (!config.id) {
+  if (!config.id && !config.ids) {
     const url = 'https://github.com/MatteoGabriele/vue-analytics#usage'
     warn('Please enter a Google Analaytics tracking ID', url)
     return

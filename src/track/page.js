@@ -9,5 +9,7 @@ export default function (page, title = '', location = '') {
     return
   }
 
-  window.ga('send', 'pageview', { page, title, location })
+  window.ga.getAll().forEach(tracker => {
+    tracker.send('pageview', { page, title, location })
+  })
 }

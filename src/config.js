@@ -11,6 +11,7 @@ let config = {
   },
   autoTracking: true,
   id: null,
+  ids: null,
   userId: null,
   manual: false,
   ignoreRoutes: []

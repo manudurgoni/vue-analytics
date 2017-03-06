@@ -10,5 +10,7 @@ export default function (category, variable, value, label = '') {
     return
   }
 
-  window.ga('send', 'timing', category, variable, value, label)
+  window.ga.getAll().forEach(tracker => {
+    tracker.send('timing', category, variable, value, label)
+  })
 }

@@ -49,6 +49,7 @@ var config = {
   },
   autoTracking: true,
   id: null,
+  ids: null,
   userId: null,
   manual: false,
   ignoreRoutes: []
@@ -124,7 +125,6 @@ var loadScript = function () {
     var debugSource = config.debug.enabled ? '_debug' : '';
     var source = 'https://www.google-analytics.com/analytics' + debugSource + '.js';
     var prior = document.getElementsByTagName('script')[0];
-
     script.async = 1;
     prior.parentNode.insertBefore(script, prior);
 
@@ -146,18 +146,36 @@ var loadScript = function () {
           };
         }
 
-        window.ga('create', config.id, 'auto', options);
+        if (config.ids) {
+          config.ids.forEach(function (_ref, index) {
+            var id = _ref.id,
+                name = _ref.name;
+
+            window.ga('create', id, 'auto', name);
+          });
+        } else {
+          window.ga('create', config.id, 'auto', options);
+        }
 
         if (!config.debug.sendHitTask) {
           set$1('sendHitTask', null);
         }
 
-        window.ga('send', 'pageview');
-
-        resolve({
-          success: true,
-          id: config.id
+        window.ga.getAll().forEach(function (tracker) {
+          tracker.send('pageview');
         });
+
+        if (config.ids) {
+          resolve({
+            success: true,
+            ids: config.ids
+          });
+        } else {
+          resolve({
+            success: true,
+            id: config.id
+          });
+        }
       }
     };
 
@@ -179,7 +197,9 @@ var trackPage = function (page) {
     return;
   }
 
-  window.ga('send', 'pageview', { page: page, title: title, location: location });
+  window.ga.getAll().forEach(function (tracker) {
+    tracker.send('pageview', { page: page, title: title, location: location });
+  });
 };
 
 /**
@@ -197,7 +217,9 @@ var trackEvent = function (category, action) {
     return;
   }
 
-  window.ga('send', 'event', category, action, label, value);
+  window.ga.getAll().forEach(function (tracker) {
+    tracker.send('event', category, action, label, value);
+  });
 };
 
 /**
@@ -214,7 +236,9 @@ var trackTime = function (category, variable, value) {
     return;
   }
 
-  window.ga('send', 'timing', category, variable, value, label);
+  window.ga.getAll().forEach(function (tracker) {
+    tracker.send('timing', category, variable, value, label);
+  });
 };
 
 /**
@@ -256,8 +280,7 @@ var init = function (router, callback) {
   if (config.manual) {
     return;
   }
-
-  if (!config.id) {
+  if (!config.id && !config.ids) {
     var url = 'https://github.com/MatteoGabriele/vue-analytics#usage';
     warn('Please enter a Google Analaytics tracking ID', url);
     return;
